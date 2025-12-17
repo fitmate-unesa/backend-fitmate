@@ -3,18 +3,14 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('Missing Supabase URL or Key in .env');
-  // We don't exit process here to allow partial functionality if needed, 
-  // but usually you should.
 }
 
-// Admin-ish client (no user session). Note:
-// - If SUPABASE_KEY is an anon key, DB operations will be subject to RLS and
-//   will FAIL unless you pass a user JWT per request.
-// - If SUPABASE_KEY is a service_role key, DB operations bypass RLS (use with care).
-const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
+// Admin client with Service Role Key (bypasses RLS, allows admin auth ops)
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 

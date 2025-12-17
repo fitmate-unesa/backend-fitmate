@@ -1,5 +1,10 @@
 const axios = require('axios');
 
+/**
+ * Mencari gym terdekat menggunakan Overpass API
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ */
 exports.getNearbyGyms = async (req, res) => {
   try {
     const { lat, lng, radius } = req.body;
@@ -9,7 +14,7 @@ exports.getNearbyGyms = async (req, res) => {
     }
 
     const r = radius || 3000;
-    
+
     // Overpass API Query
     const query = `
       [out:json];(

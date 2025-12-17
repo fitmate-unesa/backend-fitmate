@@ -1,16 +1,21 @@
 // DB operations must be executed using req.supabase (user-scoped client) to satisfy RLS.
 
+/**
+ * Menyimpan data lari baru
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ */
 exports.saveRun = async (req, res) => {
   try {
-    const { 
-      duration_seconds, 
-      distance_meters, 
-      calories_burned, 
-      pace_seconds_per_km, 
-      route_path, 
-      image_url 
+    const {
+      duration_seconds,
+      distance_meters,
+      calories_burned,
+      pace_seconds_per_km,
+      route_path,
+      image_url
     } = req.body;
-    
+
     const user_id = req.user.id;
 
     const { data, error } = await req.supabase
@@ -37,6 +42,11 @@ exports.saveRun = async (req, res) => {
   }
 };
 
+/**
+ * Mengambil riwayat lari pengguna
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ */
 exports.getRuns = async (req, res) => {
   try {
     const user_id = req.user.id;

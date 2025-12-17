@@ -1,6 +1,11 @@
 // DB operations must be executed using req.supabase (user-scoped client) to satisfy RLS.
 const { getGeminiModel } = require('../config/gemini');
 
+/**
+ * Normalisasi error ke format standar
+ * @param {any} err - Objek error
+ * @returns {Object} Status dan pesan error
+ */
 function normalizeAiError(err) {
   const statusFromConfig = err?.statusCode;
   const statusFromSdk = err?.status || err?.code || err?.response?.status;
@@ -24,6 +29,12 @@ function normalizeAiError(err) {
   return { status: safeStatus, message };
 }
 
+/**
+ * Menghasilkan konten AI dengan retry
+ * @param {Object} model - Model Gemini
+ * @param {String} prompt - Prompt
+ * @returns {Promise<Object>} Hasil generateContent
+ */
 async function generateWithRetry(model, prompt) {
   try {
     return await model.generateContent(prompt);
@@ -38,6 +49,11 @@ async function generateWithRetry(model, prompt) {
 }
 
 // Save a food log (scan or manual result)
+/**
+ * Menyimpan log makanan (hasil scan atau manual)
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ */
 exports.saveFoodLog = async (req, res) => {
   try {
     const { name, calories, protein, carbs, fat, fiber, source, confidence, image_url } = req.body;
@@ -78,10 +94,15 @@ exports.saveFoodLog = async (req, res) => {
 };
 
 // Get food history
+/**
+ * Mengambil riwayat makanan pengguna
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ */
 exports.getFoodHistory = async (req, res) => {
   try {
     const user_id = req.user.id;
-    
+
     const { data, error } = await req.supabase
       .from('food_logs')
       .select('*')
@@ -97,6 +118,11 @@ exports.getFoodHistory = async (req, res) => {
 };
 
 // Estimate nutrition from text (Manual Entry)
+/**
+ * Estimasi nutrisi dari teks input manual
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ */
 exports.estimateNutrition = async (req, res) => {
   try {
     const { name, grams } = req.body;
@@ -106,7 +132,7 @@ exports.estimateNutrition = async (req, res) => {
     if (grams === undefined || grams === null || Number.isNaN(Number(grams)) || Number(grams) <= 0) {
       return res.status(400).json({ error: 'Field "grams" is required and must be > 0' });
     }
-    
+
     const prompt = `
       Saya ingin informasi gizi makanan berikut:
       Nama: "${name}"
@@ -129,7 +155,7 @@ exports.estimateNutrition = async (req, res) => {
     const result = await generateWithRetry(model, prompt);
     const response = await result.response;
     let text = response.text();
-    
+
     // Clean up JSON string if markdown code blocks are used
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 

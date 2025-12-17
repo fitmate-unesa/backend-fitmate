@@ -1,5 +1,10 @@
 const axios = require('axios');
 
+/**
+ * Mencari video Youtube Short
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ */
 exports.searchShorts = async (req, res) => {
   try {
     const { query, pageToken } = req.body;
@@ -20,7 +25,7 @@ exports.searchShorts = async (req, res) => {
     }
 
     const response = await axios.get('https://www.googleapis.com/youtube/v3/search', { params });
-    
+
     // Just return the raw items and nextPageToken, let client handle YoutubeExplode
     // because YoutubeExplode is heavy/scraping-based and might be better on client for now 
     // (or we could move it here but let's stick to API proxying first).

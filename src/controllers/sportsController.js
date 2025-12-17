@@ -1,6 +1,11 @@
 // DB operations must be executed using req.supabase (user-scoped client) to satisfy RLS.
-const geminiModel = require('../config/gemini');
+const { getGeminiModel } = require('../config/gemini');
 
+/**
+ * Ekstrak array JSON pertama dari teks (untuk membersihkan output AI)
+ * @param {String} text - Teks dari AI
+ * @returns {String|null} String JSON array
+ */
 function extractFirstJsonArray(text) {
   if (!text) return null;
   const cleaned = String(text).replace(/```json/g, '').replace(/```/g, '').trim();
@@ -10,6 +15,11 @@ function extractFirstJsonArray(text) {
   return cleaned.slice(start, end + 1);
 }
 
+/**
+ * Membuat rencana olahraga 7 hari menggunakan AI
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ */
 exports.generatePlan = async (req, res) => {
   try {
     const { goal, height, weight } = req.body;
@@ -50,20 +60,21 @@ exports.generatePlan = async (req, res) => {
       Hanya JSON valid, tanpa teks lain.
     `;
 
-    const result = await geminiModel.generateContent(prompt);
+    const model = getGeminiModel();
+    const result = await model.generateContent(prompt);
     const response = await result.response;
     let text = response.text();
-    
+
     // Clean up JSON
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
     let planData;
     try {
-        const jsonArray = extractFirstJsonArray(text) ?? text;
-        planData = JSON.parse(jsonArray);
+      const jsonArray = extractFirstJsonArray(text) ?? text;
+      planData = JSON.parse(jsonArray);
     } catch (e) {
-        // Fallback or retry logic could go here
-        return res.status(502).json({ error: 'Failed to parse AI response', raw: text });
+      // Fallback or retry logic could go here
+      return res.status(502).json({ error: 'Failed to parse AI response', raw: text });
     }
 
     // Save to database
@@ -90,18 +101,23 @@ exports.generatePlan = async (req, res) => {
   }
 };
 
+/**
+ * Mengambil riwayat rencana olahraga
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ */
 exports.getPlans = async (req, res) => {
-    try {
-        const user_id = req.user.id;
-        const { data, error } = await req.supabase
-            .from('sports_plans')
-            .select('*')
-            .eq('user_id', user_id)
-            .order('created_at', { ascending: false });
+  try {
+    const user_id = req.user.id;
+    const { data, error } = await req.supabase
+      .from('sports_plans')
+      .select('*')
+      .eq('user_id', user_id)
+      .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        res.json(data);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 }

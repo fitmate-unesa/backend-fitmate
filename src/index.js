@@ -10,6 +10,8 @@ const sportsRoutes = require('./routes/sports');
 const aiRoutes = require('./routes/ai');
 const gymRoutes = require('./routes/gym');
 const youtubeRoutes = require('./routes/youtube');
+const paymentRoutes = require('./routes/payment');
+const subscriptionRoutes = require('./routes/subscription');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +29,8 @@ app.use('/api/sports', sportsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/gym', gymRoutes);
 app.use('/api/youtube', youtubeRoutes);
+app.use('/api/payment', paymentRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 // Health Check
 app.get('/', (req, res) => {

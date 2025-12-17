@@ -1,5 +1,10 @@
 const { getGeminiModel } = require('../config/gemini');
 
+/**
+ * Normalisasi error AI ke format standar
+ * @param {any} err - Objek error
+ * @returns {Object} Status dan pesan error
+ */
 function normalizeAiError(err) {
   const statusFromConfig = err?.statusCode;
   // Some errors from Google SDK contain status/code fields.
@@ -29,6 +34,12 @@ function normalizeAiError(err) {
   return { status: safeStatus, message };
 }
 
+/**
+ * Menghasilkan konten AI dengan mekanisme retry sederhana
+ * @param {Object} model - Model Gemini
+ * @param {String} prompt - Prompt input
+ * @returns {Promise<Object>} Hasil generateContent
+ */
 async function generateWithRetry(model, prompt) {
   try {
     return await model.generateContent(prompt);
@@ -43,10 +54,15 @@ async function generateWithRetry(model, prompt) {
   }
 }
 
+/**
+ * Handler endpoint Chat AI
+ * @param {Object} req - Request Express
+ * @param {Object} res - Response Express
+ */
 exports.chatWithAI = async (req, res) => {
   try {
     const { message } = req.body;
-    
+
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
     }
